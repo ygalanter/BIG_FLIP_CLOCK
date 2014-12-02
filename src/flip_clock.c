@@ -1,6 +1,6 @@
 #include <pebble.h>
 #include "flip_layer.h"
-
+  
 static Window *window;
 static FlipLayer *layer[4];
 
@@ -11,6 +11,28 @@ static TextLayer *text_layer_dow;
 char buffer_dow[] = "SAT   ";
 
 static Layer *batteryLayer;
+
+// {*** Begin configurable option 
+  
+#define KEY_INVERT 0
+#define KEY_SHOW_BATTERY 1
+#define KEY_SWAP_DATE_DOW 2
+
+static InverterLayer *inverter_layer;
+
+void destroy_inveter_layer(){
+    if (inverter_layer != NULL) {
+      inverter_layer_destroy(inverter_layer);
+      inverter_layer = NULL;
+    }
+}
+
+void create_inverter_layer(){
+  if (inverter_layer != NULL) destroy_inveter_layer(); 
+  inverter_layer = inverter_layer_create(GRect(0, 0, 144,168));
+  layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(inverter_layer));
+}
+
 
 
 static void batteryLayer_update_callback(Layer *me, GContext* ctx) {
@@ -24,9 +46,87 @@ static void batteryLayer_update_callback(Layer *me, GContext* ctx) {
   } else {
      graphics_draw_rect(ctx, GRect(0, 0, layer_bounds.size.w * state.charge_percent / 100 , layer_bounds.size.h));  
   }
-  
-	
 }
+
+void destroy_battery_layer() {
+  if (batteryLayer != NULL) {
+     layer_destroy(batteryLayer);
+     batteryLayer = NULL;
+  }
+}
+
+
+void create_battery_layer() {
+  if (batteryLayer != NULL)  destroy_battery_layer();
+  batteryLayer = layer_create(GRect(2, 2, 140, 3));
+  layer_set_update_proc(batteryLayer, batteryLayer_update_callback);
+  layer_add_child(window_get_root_layer(window), batteryLayer);
+}
+
+int DateYcoord = -4;
+int DoWYcoord = 106;
+
+static void in_recv_handler(DictionaryIterator *iterator, void *context) {
+  Tuple *t = dict_read_first(iterator);
+
+  while (t)  {
+    switch(t->key)    {
+
+      case KEY_INVERT:
+        if (t->value->int8 == 1) {
+          create_inverter_layer();
+          persist_write_bool(KEY_INVERT, true);
+        } else {
+          destroy_inveter_layer();
+          persist_write_bool(KEY_INVERT, false);  
+        }
+        break;
+      
+      case KEY_SHOW_BATTERY:
+        if (t->value->int8 == 1) {
+          create_battery_layer();
+          persist_write_bool(KEY_SHOW_BATTERY, true);
+          //on initial load inverter layer needs to be recreated AFTER battery layer
+          if (persist_read_bool(KEY_INVERT) == true) create_inverter_layer();
+        } else {
+          destroy_battery_layer();
+          persist_write_bool(KEY_SHOW_BATTERY, false);
+        }      
+        break;
+      
+      case KEY_SWAP_DATE_DOW:
+      
+        if (t->value->int8 == 1) {
+          DateYcoord = 106;
+          DoWYcoord = -4;
+          persist_write_bool(KEY_SWAP_DATE_DOW, true);
+        } else {
+          DateYcoord = -4;
+          DoWYcoord = 106; 
+          persist_write_bool(KEY_SWAP_DATE_DOW, false);
+        }
+      
+        layer_set_frame(text_layer_get_layer(text_layer_date), GRect(0, DateYcoord, 144, 60));
+        layer_set_frame(text_layer_get_layer(text_layer_dow), GRect(0, DoWYcoord, 144, 60));
+      
+        break;
+   
+    }    
+    
+    t = dict_read_next(iterator);
+  }
+}
+
+
+
+  
+// End configurable option ***}
+
+
+
+
+
+
 
 
 static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
@@ -59,14 +159,22 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
 
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
+  
+  if (persist_read_bool(KEY_SWAP_DATE_DOW) == true) {
+    DateYcoord = 106;
+    DoWYcoord = -4;
+  } else {
+    DateYcoord = -4;
+    DoWYcoord = 106;    
+  }
    
-  text_layer_date = text_layer_create(GRect(0, -4, 144, 60));
+  text_layer_date = text_layer_create(GRect(0, DateYcoord, 144, 60));
   text_layer_set_text_color(text_layer_date, GColorBlack);
   text_layer_set_text_alignment(text_layer_date, GTextAlignmentCenter);
   text_layer_set_font(text_layer_date, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DIGITAL_SEVEN_MONO_50)));
   layer_add_child(window_layer, text_layer_get_layer(text_layer_date));
   
-  text_layer_dow = text_layer_create(GRect(0, 106, 144, 60));
+  text_layer_dow = text_layer_create(GRect(0, DoWYcoord, 144, 60));
   text_layer_set_text_color(text_layer_dow, GColorBlack);
   text_layer_set_text_alignment(text_layer_dow, GTextAlignmentCenter);
   text_layer_set_font(text_layer_dow, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DIGITAL_SEVEN_MONO_50)));
@@ -77,9 +185,14 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, flip_layer_get_layer(layer[i]));
   }
   
-  batteryLayer = layer_create(GRect(2, 2, 140, 3));
-	layer_set_update_proc(batteryLayer, batteryLayer_update_callback);
-  layer_add_child(window_layer, batteryLayer);
+  if (persist_read_bool(KEY_SHOW_BATTERY) == true) {
+    create_battery_layer();
+  }
+  
+  if (persist_read_bool(KEY_INVERT) == true) {
+    create_inverter_layer();   
+  }
+  
     
 }
 
@@ -90,7 +203,9 @@ static void window_unload(Window *window) {
   
   text_layer_destroy(text_layer_date);
   text_layer_destroy(text_layer_dow);
-  layer_destroy(batteryLayer);
+    
+  destroy_inveter_layer();
+  destroy_battery_layer();
 }
 
 static void init(void) {
@@ -103,9 +218,13 @@ static void init(void) {
   window_stack_push(window, true);
 
   tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
+  
+  app_message_register_inbox_received((AppMessageInboxReceived) in_recv_handler);
+  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
 }
 
 static void deinit(void) {
+  app_message_deregister_callbacks();
   window_destroy(window);
 }
 
