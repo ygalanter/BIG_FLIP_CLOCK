@@ -11,6 +11,7 @@ static TextLayer *text_layer_dow;
 char buffer_dow[] = "SAT   ";
 
 static Layer *batteryLayer;
+static TextLayer *s_textlayer_bt;
 
 // {*** Begin configurable option 
   
@@ -123,10 +124,15 @@ static void in_recv_handler(DictionaryIterator *iterator, void *context) {
 // End configurable option ***}
 
 
-
-
-
-
+// show bt connected/disconnected
+void display_bt_layer(bool connected) {
+  vibes_double_pulse();
+  if (connected) {
+    text_layer_set_text_color(s_textlayer_bt, GColorWhite);
+  } else {
+    text_layer_set_text_color(s_textlayer_bt, GColorBlack);
+  }
+}
 
 
 static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
@@ -179,6 +185,16 @@ static void window_load(Window *window) {
   text_layer_set_text_alignment(text_layer_dow, GTextAlignmentCenter);
   text_layer_set_font(text_layer_dow, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DIGITAL_SEVEN_MONO_50)));
   layer_add_child(window_layer, text_layer_get_layer(text_layer_dow));
+    
+  // s_textlayer_bt
+  s_textlayer_bt = text_layer_create(GRect(0, 152, 144, 16));
+  text_layer_set_text(s_textlayer_bt, "Bluetooth disconnected");
+  text_layer_set_background_color(s_textlayer_bt, GColorClear);
+  text_layer_set_text_color(s_textlayer_bt, GColorClear);
+  text_layer_set_text_alignment(s_textlayer_bt, GTextAlignmentCenter);
+  text_layer_set_font(s_textlayer_bt, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  layer_add_child(window_layer, (Layer *)s_textlayer_bt);
+  
 
   for(int i=0; i<4; i++){
     layer[i] = flip_layer_create(GRect(36 * i + (i>1? 1:0) , (168-60)/2, 35, 60));
@@ -221,10 +237,13 @@ static void init(void) {
   
   app_message_register_inbox_received((AppMessageInboxReceived) in_recv_handler);
   app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+  
+  bluetooth_connection_service_subscribe(display_bt_layer);
 }
 
 static void deinit(void) {
   app_message_deregister_callbacks();
+  bluetooth_connection_service_unsubscribe();
   window_destroy(window);
 }
 
