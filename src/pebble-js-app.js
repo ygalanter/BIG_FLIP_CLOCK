@@ -6,12 +6,12 @@ Pebble.addEventListener("ready",
 
 Pebble.addEventListener("showConfiguration",
   function(e) {
-    var configurationSTR = localStorage.getItem("big_flip_clock_config") || '{"showBattery": 1, "invert": 0}';
+    var configurationSTR = localStorage.getItem("big_flip_clock_config") || '{"showBattery": 1, "invert": 0, "swapDateDoW" : 0, "enableBtNotif": 1}';
     var configuration = JSON.parse(configurationSTR);
     
     
     //Load the remote config page
-    Pebble.openURL("http://codecorner.galanter.net/pebble/big_flip_clock_config.htm?showBattery=" + configuration.showBattery + '&invert=' + configuration.invert + '&swapDateDoW=' + configuration.swapDateDoW);
+    Pebble.openURL("http://codecorner.galanter.net/pebble/big_flip_clock_config.htm?showBattery=" + configuration.showBattery + '&invert=' + configuration.invert + '&swapDateDoW=' + configuration.swapDateDoW + "&enableBtNotif=" + configuration.enableBtNotif);
   }
 );
 
@@ -31,7 +31,8 @@ Pebble.addEventListener("webviewclosed",
           {
             "KEY_SHOW_BATTERY": configuration.showBattery,
             "KEY_INVERT": configuration.invert,
-            "KEY_SWAP_DATE_DOW": configuration.swapDateDoW
+            "KEY_SWAP_DATE_DOW": configuration.swapDateDoW,
+            "KEY_ENABLE_BT_NOTIF": configuration.enableBtNotif,
           },
         function(e) {
           console.log("Sending settings data...");

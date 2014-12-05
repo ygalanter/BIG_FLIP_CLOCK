@@ -18,23 +18,9 @@ static TextLayer *s_textlayer_bt;
 #define KEY_INVERT 0
 #define KEY_SHOW_BATTERY 1
 #define KEY_SWAP_DATE_DOW 2
+#define KEY_ENABLE_BT_NOTIF 3  
 
 static InverterLayer *inverter_layer;
-
-void destroy_inveter_layer(){
-    if (inverter_layer != NULL) {
-      inverter_layer_destroy(inverter_layer);
-      inverter_layer = NULL;
-    }
-}
-
-void create_inverter_layer(){
-  if (inverter_layer != NULL) destroy_inveter_layer(); 
-  inverter_layer = inverter_layer_create(GRect(0, 0, 144,168));
-  layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(inverter_layer));
-}
-
-
 
 static void batteryLayer_update_callback(Layer *me, GContext* ctx) {
 	GRect layer_bounds = layer_get_bounds(me);
@@ -49,20 +35,15 @@ static void batteryLayer_update_callback(Layer *me, GContext* ctx) {
   }
 }
 
-void destroy_battery_layer() {
-  if (batteryLayer != NULL) {
-     layer_destroy(batteryLayer);
-     batteryLayer = NULL;
-  }
+
+void position_battery_layer(int x, int y, int width, int height) {
+  layer_set_frame(batteryLayer, GRect(x, y, width, height));
 }
 
-
-void create_battery_layer() {
-  if (batteryLayer != NULL)  destroy_battery_layer();
-  batteryLayer = layer_create(GRect(2, 2, 140, 3));
-  layer_set_update_proc(batteryLayer, batteryLayer_update_callback);
-  layer_add_child(window_get_root_layer(window), batteryLayer);
+void position_inverter_layer(int x, int y, int width, int height) {
+  layer_set_frame(inverter_layer_get_layer(inverter_layer), GRect(x, y, width, height));
 }
+
 
 int DateYcoord = -4;
 int DoWYcoord = 106;
@@ -75,22 +56,20 @@ static void in_recv_handler(DictionaryIterator *iterator, void *context) {
 
       case KEY_INVERT:
         if (t->value->int8 == 1) {
-          create_inverter_layer();
+          position_inverter_layer(0, 0, 144, 168);
           persist_write_bool(KEY_INVERT, true);
         } else {
-          destroy_inveter_layer();
+          position_inverter_layer(0, 0, 0, 0);
           persist_write_bool(KEY_INVERT, false);  
         }
         break;
       
       case KEY_SHOW_BATTERY:
         if (t->value->int8 == 1) {
-          create_battery_layer();
+          position_battery_layer(2, 2, 140, 3);
           persist_write_bool(KEY_SHOW_BATTERY, true);
-          //on initial load inverter layer needs to be recreated AFTER battery layer
-          if (persist_read_bool(KEY_INVERT) == true) create_inverter_layer();
         } else {
-          destroy_battery_layer();
+          position_battery_layer(0, 0, 0, 0);
           persist_write_bool(KEY_SHOW_BATTERY, false);
         }      
         break;
@@ -111,6 +90,14 @@ static void in_recv_handler(DictionaryIterator *iterator, void *context) {
         layer_set_frame(text_layer_get_layer(text_layer_dow), GRect(0, DoWYcoord, 144, 60));
       
         break;
+      
+      case KEY_ENABLE_BT_NOTIF:
+        
+        if (t->value->int8 == 1) {
+           persist_write_bool(KEY_ENABLE_BT_NOTIF, true);
+        } else {
+           persist_write_bool(KEY_ENABLE_BT_NOTIF, false);
+        }
    
     }    
     
@@ -126,6 +113,10 @@ static void in_recv_handler(DictionaryIterator *iterator, void *context) {
 
 // show bt connected/disconnected
 void display_bt_layer(bool connected) {
+  
+  // if bt notifs disabled - don't do anything
+  if (persist_read_bool(KEY_ENABLE_BT_NOTIF) == false) return;
+  
   vibes_double_pulse();
   if (connected) {
     text_layer_set_text_color(s_textlayer_bt, GColorWhite);
@@ -202,13 +193,22 @@ static void window_load(Window *window) {
   }
   
   if (persist_read_bool(KEY_SHOW_BATTERY) == true) {
-    create_battery_layer();
+    batteryLayer = layer_create(GRect(2, 2, 140, 3));
+  } else {
+    batteryLayer = layer_create(GRect(0, 0, 0, 0));
   }
+  layer_set_update_proc(batteryLayer, batteryLayer_update_callback);
+  layer_add_child(window_get_root_layer(window), batteryLayer);
   
   if (persist_read_bool(KEY_INVERT) == true) {
-    create_inverter_layer();   
+    inverter_layer = inverter_layer_create(GRect(0, 0, 144,168));
+  } else {
+    inverter_layer = inverter_layer_create(GRect(0, 0, 0, 0));
   }
+  layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(inverter_layer));
   
+  // on initial load check BT
+  display_bt_layer(bluetooth_connection_service_peek());
     
 }
 
@@ -220,8 +220,8 @@ static void window_unload(Window *window) {
   text_layer_destroy(text_layer_date);
   text_layer_destroy(text_layer_dow);
     
-  destroy_inveter_layer();
-  destroy_battery_layer();
+  inverter_layer_destroy(inverter_layer);
+  layer_destroy(batteryLayer);
 }
 
 static void init(void) {

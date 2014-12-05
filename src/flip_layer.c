@@ -223,6 +223,6 @@ void flip_layer_destroy(FlipLayer *flip_layer){
      flip_layer->delayedDestroy = true;
   }
 
-	free(flip_layer->resized_data);
+	//free(flip_layer->resized_data);
 	free(flip_layer);
 }
