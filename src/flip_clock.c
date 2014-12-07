@@ -1,6 +1,35 @@
 #include <pebble.h>
 #include "flip_layer.h"
   
+#define NUMBER_IMAGE_COUNT 10
+
+int NUMBER_IMAGE_RESOURCE_UP_IDS[NUMBER_IMAGE_COUNT] = {
+  RESOURCE_ID_IMAGE_0_UP,
+  RESOURCE_ID_IMAGE_1_UP,
+  RESOURCE_ID_IMAGE_2_UP,
+  RESOURCE_ID_IMAGE_3_UP,
+  RESOURCE_ID_IMAGE_4_UP,
+  RESOURCE_ID_IMAGE_5_UP,
+  RESOURCE_ID_IMAGE_6_UP,
+  RESOURCE_ID_IMAGE_7_UP,
+  RESOURCE_ID_IMAGE_8_UP,
+  RESOURCE_ID_IMAGE_9_UP,
+};
+
+int NUMBER_IMAGE_RESOURCE_DOWN_IDS[NUMBER_IMAGE_COUNT] = {
+  RESOURCE_ID_IMAGE_0_DOWN,
+  RESOURCE_ID_IMAGE_1_DOWN,
+  RESOURCE_ID_IMAGE_2_DOWN,
+  RESOURCE_ID_IMAGE_3_DOWN,
+  RESOURCE_ID_IMAGE_4_DOWN,
+  RESOURCE_ID_IMAGE_5_DOWN,
+  RESOURCE_ID_IMAGE_6_DOWN,
+  RESOURCE_ID_IMAGE_7_DOWN,
+  RESOURCE_ID_IMAGE_8_DOWN,
+  RESOURCE_ID_IMAGE_9_DOWN,
+};  
+  
+  
 static Window *window;
 static FlipLayer *layer[4];
 
@@ -189,6 +218,10 @@ static void window_load(Window *window) {
 
   for(int i=0; i<4; i++){
     layer[i] = flip_layer_create(GRect(36 * i + (i>1? 1:0) , (168-60)/2, 35, 60));
+  }
+  
+  for(int i=0; i<4; i++){
+    flip_layer_set_images(layer[i], NUMBER_IMAGE_RESOURCE_UP_IDS, NUMBER_IMAGE_RESOURCE_DOWN_IDS, NUMBER_IMAGE_COUNT);
     layer_add_child(window_layer, flip_layer_get_layer(layer[i]));
   }
   
@@ -208,7 +241,13 @@ static void window_load(Window *window) {
   layer_add_child(window_get_root_layer(window), inverter_layer_get_layer(inverter_layer));
   
   // on initial load check BT
-  display_bt_layer(bluetooth_connection_service_peek());
+  if (persist_read_bool(KEY_ENABLE_BT_NOTIF) == true) {
+      if (bluetooth_connection_service_peek()) {
+        text_layer_set_text_color(s_textlayer_bt, GColorWhite);
+      } else {
+        text_layer_set_text_color(s_textlayer_bt, GColorBlack);
+      }
+  }
     
 }
 
