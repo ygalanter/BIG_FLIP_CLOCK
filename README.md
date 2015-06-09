@@ -1,4 +1,4 @@
-"BIG FLIP_CLOCK"
+"BIG FLIP CLOCK"
 ==============
 Watchface for Pebble/Pebble Time smartwacth featuring old-style flip animation, digital time and user configurable uptions.
 
