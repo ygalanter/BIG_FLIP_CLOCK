@@ -2,78 +2,72 @@
 
 #include "flip_layer.h"
 #include "gbitmap_tools.h"
+#include"flip_layer_extention.h"  
 
 static void layer_update_callback(Layer *me, GContext* ctx) {
 	FlipLayer* flip_layer = *(FlipLayer**)(layer_get_data(me));
 	GRect layer_bounds = layer_get_bounds(me);
 
-  //*** don't do round cornerns in code: images already have them
-	//graphics_context_set_fill_color(ctx, GColorWhite);
-	//graphics_fill_rect(ctx, GRect(0,0,layer_bounds.size.w,layer_bounds.size.h), 7, GCornersAll);
-	//graphics_context_set_stroke_color(ctx, GColorBlack);
-	//graphics_draw_round_rect(ctx, GRect(0,0,layer_bounds.size.w,layer_bounds.size.h), 7);
-
-	graphics_context_set_compositing_mode(ctx,GCompOpAnd);
-
-	if(flip_layer->up_image){
-		GRect bounds = flip_layer->up_image->bounds;
+  if(flip_layer->up_image){
+		GRect bounds = gbitmap_get_bounds(flip_layer->up_image);
 		GPoint origin;
 		origin.x = (layer_bounds.size.w - bounds.size.w) / 2;
 		origin.y = (layer_bounds.size.h - 2*bounds.size.h) / 2;
 		graphics_draw_bitmap_in_rect(ctx, flip_layer->up_image, (GRect) { .origin = origin, .size = bounds.size });
 	}
-	if(flip_layer->down_image){
-		GRect bounds = flip_layer->down_image->bounds;
+
+  if(flip_layer->down_image){
+		GRect bounds = gbitmap_get_bounds(flip_layer->down_image);
 		GPoint origin;
 		origin.x = (layer_bounds.size.w - bounds.size.w) / 2;
 		origin.y = layer_bounds.size.h / 2;
 		graphics_draw_bitmap_in_rect(ctx, flip_layer->down_image, (GRect) { .origin = origin, .size = bounds.size });
 	}
 
-	graphics_context_set_compositing_mode(ctx,GCompOpAssign);
-
 	if(flip_layer->anim_resized_image){
-		GRect bounds = flip_layer->anim_resized_image->bounds;
+		GRect bounds = gbitmap_get_bounds(flip_layer->anim_resized_image);
 		GPoint origin;
 		origin.x = (layer_bounds.size.w - bounds.size.w) / 2;
 		origin.y = flip_layer->anim_image_y;
+		graphics_fill_rect(ctx, (GRect) { .origin = origin, .size = bounds.size }, 0, GCornersAll);
 		graphics_draw_bitmap_in_rect(ctx, flip_layer->anim_resized_image, (GRect) { .origin = origin, .size = bounds.size });
 		graphics_draw_rect(ctx, (GRect) { .origin = { 0, flip_layer->anim_image_y }, .size = { layer_bounds.size.w, bounds.size.h } });
 	}
-
-  // *** doing our own horizontal line below
-	//graphics_context_set_fill_color(ctx, GColorBlack);
-	//graphics_fill_rect(ctx, GRect(0,layer_bounds.size.h/2 - 1,layer_bounds.size.w,3), 0, 0);
-
-	//graphics_fill_rect(ctx, GRect(2,layer_bounds.size.h/2-4,2,9), 0, GCornersAll);
-	//graphics_fill_rect(ctx, GRect(layer_bounds.size.w - 2 - 2,layer_bounds.size.h/2-4,2,9), 0, GCornersAll);
+	
+    //middle line
+    graphics_context_set_fill_color(ctx, digit_back);
+  	graphics_fill_rect(ctx, GRect(0,layer_bounds.size.h/2 - 1,layer_bounds.size.w,3), 0, 0);
   
-  graphics_context_set_fill_color(ctx, GColorWhite);
-	graphics_fill_rect(ctx, GRect(0,layer_bounds.size.h/2 - 1,layer_bounds.size.w,3), 0, 0);
+    graphics_context_set_stroke_color(ctx, color_back);
+    graphics_draw_line(ctx, GPoint(0, layer_bounds.size.h/2),  GPoint(layer_bounds.size.w, layer_bounds.size.h/2));
+  
 
-  graphics_context_set_fill_color(ctx, GColorBlack);
-  graphics_draw_line(ctx, GPoint(0, layer_bounds.size.h/2),  GPoint(layer_bounds.size.w, layer_bounds.size.h/2));
-
+    
 }
 
 Layer* flip_layer_get_layer(FlipLayer *flip_layer){
 	return flip_layer->layer;
 }
 
-void animationUpdate(struct Animation *animation, const uint32_t time_normalized){
+#ifdef PBL_COLOR
+static void animationUpdate(Animation *animation, const AnimationProgress progress) {
+#else
+static void animationUpdate(Animation *animation, const uint32_t progress) {
+#endif
 	FlipLayer *flip_layer = (FlipLayer *)animation_get_context(animation);
 
 	GRect layer_bounds = layer_get_bounds(flip_layer->layer);
 
-	int percent = time_normalized * 100 / ANIMATION_NORMALIZED_MAX;
+	int percent = progress * 100 / ANIMATION_NORMALIZED_MAX;
 	if(percent < 50){
 		if(flip_layer->anim_resized_image){
 			gbitmap_destroy(flip_layer->anim_resized_image);
 			flip_layer->anim_resized_image = NULL;
 		}
 		flip_layer->anim_resized_image = scaleBitmap(flip_layer->up_anim_image, 100, 100 - 2 * percent);
-		if(flip_layer->anim_resized_image){
-			GRect bounds = flip_layer->anim_resized_image->bounds;
+    
+    if(flip_layer->anim_resized_image){
+			GRect bounds = gbitmap_get_bounds(flip_layer->anim_resized_image);
 			flip_layer->anim_image_y = layer_bounds.size.h/2 - bounds.size.h;
 		}
 	}
@@ -83,6 +77,7 @@ void animationUpdate(struct Animation *animation, const uint32_t time_normalized
 			flip_layer->anim_resized_image = NULL;
 		}
 		flip_layer->anim_resized_image = scaleBitmap(flip_layer->down_anim_image, 100, 2 * (percent - 50));
+    
 		flip_layer->anim_image_y = layer_bounds.size.h/2;
 	}
 
@@ -110,6 +105,14 @@ static void animation_started(Animation *animation, void *data) {
 	
 		flip_layer->up_anim_image = gbitmap_create_with_resource(flip_layer->up_images[flip_layer->current_Digit]);
 		flip_layer->down_anim_image = gbitmap_create_with_resource(flip_layer->down_images[flip_layer->next_Digit]);
+    
+    #ifdef PBL_COLOR // Using extention methods to color image
+      flip_layer_color_image(flip_layer->up_image);
+      flip_layer_color_image(flip_layer->down_image);
+      flip_layer_color_image(flip_layer->up_anim_image);
+      flip_layer_color_image(flip_layer->down_anim_image);
+    #endif  
+    
 	
 		layer_mark_dirty(flip_layer->layer);
 	}
@@ -120,6 +123,8 @@ void animation_stopped(Animation *animation, bool finished, void *data) {
 	flip_layer->current_Digit = flip_layer->next_Digit;
 
 	if(flip_layer->anim_resized_image){
+		gbitmap_destroy(flip_layer->anim_resized_image);
+		flip_layer->anim_resized_image = NULL;
 	}
 	if(flip_layer->up_anim_image){
 		gbitmap_destroy(flip_layer->up_anim_image);
@@ -138,8 +143,29 @@ void animation_stopped(Animation *animation, bool finished, void *data) {
 	}
 
 	flip_layer->down_image = gbitmap_create_with_resource(flip_layer->down_images[flip_layer->current_Digit]);
+  
+  #ifdef PBL_COLOR  // Using extention methods to color image
+    flip_layer_color_image(flip_layer->down_image);
+  #endif   
 
 	flip_layer->isAnimating = false;
+  
+  //YG JUN-04-2015: On basalt we need to recreate animation
+  #ifdef PBL_COLOR
+   
+    flip_layer->animation = animation_create();
+  	static const AnimationImplementation implementation = {
+  	  .update = animationUpdate
+  	};
+  	animation_set_handlers(flip_layer->animation, (AnimationHandlers) {
+  		.started = (AnimationStartedHandler) animation_started,
+  		.stopped = (AnimationStoppedHandler) animation_stopped,
+  	}, flip_layer);
+  	animation_set_duration(flip_layer->animation, 1400);
+  	animation_set_implementation(flip_layer->animation, &implementation);
+    
+  #endif
+  
 
 	layer_mark_dirty(flip_layer->layer);
 }
@@ -159,14 +185,15 @@ FlipLayer* flip_layer_create(GRect frame){
 	memcpy(layer_get_data(flip_layer->layer), &flip_layer, sizeof(FlipLayer*));
 
 	flip_layer->animation = animation_create();
-	flip_layer->animImpl.update = animationUpdate;
+	static const AnimationImplementation implementation = {
+	  .update = animationUpdate
+	};
 	animation_set_handlers(flip_layer->animation, (AnimationHandlers) {
 		.started = (AnimationStartedHandler) animation_started,
 		.stopped = (AnimationStoppedHandler) animation_stopped,
 	}, flip_layer);
-
 	animation_set_duration(flip_layer->animation, 1400);
-	animation_set_implementation(flip_layer->animation, &(flip_layer->animImpl));
+	animation_set_implementation(flip_layer->animation, &implementation);
 
 	flip_layer->current_Digit = 0;
 	flip_layer->up_image = NULL;
@@ -184,7 +211,11 @@ FlipLayer* flip_layer_create(GRect frame){
 void flip_layer_destroy(FlipLayer *flip_layer){
 	if(flip_layer->animation){
 		animation_unschedule(flip_layer->animation);
-		animation_destroy(flip_layer->animation);
+    
+    //YG JUN-04-2015: On aplite we need to recreate animation
+    #ifndef PBL_COLOR
+		  animation_destroy(flip_layer->animation);
+    #endif
 	}
 	layer_destroy(flip_layer->layer);
 	if(flip_layer->up_image){
@@ -213,5 +244,11 @@ void flip_layer_set_images(FlipLayer *flip_layer, int *up_images, int *down_imag
 	if(nb_of_images > 0){
 		flip_layer->up_image = gbitmap_create_with_resource(up_images[0]);
 		flip_layer->down_image = gbitmap_create_with_resource(down_images[0]);
+    
+    #ifdef PBL_COLOR  // Using extention methods to color image
+      flip_layer_color_image(flip_layer->up_image);
+      flip_layer_color_image(flip_layer->down_image);
+    #endif
+    
 	}
 }

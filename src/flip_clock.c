@@ -1,5 +1,8 @@
 #include <pebble.h>
 #include "flip_layer.h"
+#include "flip_layer_extention.h"
+#include "effec_layer.h"
+  
   
 #define NUMBER_IMAGE_COUNT 10
 
@@ -42,6 +45,7 @@ char buffer_dow[] = "SAT   ";
 static Layer *batteryLayer;
 static TextLayer *s_textlayer_bt;
 
+
 // {*** Begin configurable option 
   
 #define KEY_INVERT 0
@@ -55,11 +59,12 @@ static void batteryLayer_update_callback(Layer *me, GContext* ctx) {
 	GRect layer_bounds = layer_get_bounds(me);
   BatteryChargeState state =  battery_state_service_peek();
 
-  graphics_context_set_fill_color(ctx, GColorBlack);
-  
+    
   if (state.is_charging) {
+     graphics_context_set_fill_color(ctx, color_battery);
      graphics_fill_rect(ctx, GRect(0, 0, layer_bounds.size.w * state.charge_percent / 100 , layer_bounds.size.h), 0, 0);  
   } else {
+     graphics_context_set_stroke_color(ctx, color_battery);
      graphics_draw_rect(ctx, GRect(0, 0, layer_bounds.size.w * state.charge_percent / 100 , layer_bounds.size.h));  
   }
 }
@@ -148,9 +153,9 @@ void display_bt_layer(bool connected) {
   
   vibes_double_pulse();
   if (connected) {
-    text_layer_set_text_color(s_textlayer_bt, GColorWhite);
+    text_layer_set_text_color(s_textlayer_bt, color_back);
   } else {
-    text_layer_set_text_color(s_textlayer_bt, GColorBlack);
+    text_layer_set_text_color(s_textlayer_bt, color_bluetooth);
   }
 }
 
@@ -195,13 +200,15 @@ static void window_load(Window *window) {
   }
    
   text_layer_date = text_layer_create(GRect(0, DateYcoord, 144, 60));
-  text_layer_set_text_color(text_layer_date, GColorBlack);
+  text_layer_set_text_color(text_layer_date, color_date);
+  text_layer_set_background_color(text_layer_date, GColorClear);
   text_layer_set_text_alignment(text_layer_date, GTextAlignmentCenter);
   text_layer_set_font(text_layer_date, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DIGITAL_SEVEN_MONO_50)));
   layer_add_child(window_layer, text_layer_get_layer(text_layer_date));
   
   text_layer_dow = text_layer_create(GRect(0, DoWYcoord, 144, 60));
-  text_layer_set_text_color(text_layer_dow, GColorBlack);
+  text_layer_set_text_color(text_layer_dow, color_dow);
+  text_layer_set_background_color(text_layer_dow, GColorClear);
   text_layer_set_text_alignment(text_layer_dow, GTextAlignmentCenter);
   text_layer_set_font(text_layer_dow, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DIGITAL_SEVEN_MONO_50)));
   layer_add_child(window_layer, text_layer_get_layer(text_layer_dow));
@@ -210,7 +217,7 @@ static void window_load(Window *window) {
   s_textlayer_bt = text_layer_create(GRect(0, 152, 144, 16));
   text_layer_set_text(s_textlayer_bt, "Bluetooth disconnected");
   text_layer_set_background_color(s_textlayer_bt, GColorClear);
-  text_layer_set_text_color(s_textlayer_bt, GColorClear);
+  text_layer_set_text_color(s_textlayer_bt, color_back);
   text_layer_set_text_alignment(s_textlayer_bt, GTextAlignmentCenter);
   text_layer_set_font(s_textlayer_bt, fonts_get_system_font(FONT_KEY_GOTHIC_14));
   layer_add_child(window_layer, (Layer *)s_textlayer_bt);
@@ -243,9 +250,9 @@ static void window_load(Window *window) {
   // on initial load check BT
   if (persist_read_bool(KEY_ENABLE_BT_NOTIF) == true) {
       if (bluetooth_connection_service_peek()) {
-        text_layer_set_text_color(s_textlayer_bt, GColorWhite);
+        text_layer_set_text_color(s_textlayer_bt, color_back);
       } else {
-        text_layer_set_text_color(s_textlayer_bt, GColorBlack);
+        text_layer_set_text_color(s_textlayer_bt, color_bluetooth);
       }
   }
     
@@ -264,12 +271,38 @@ static void window_unload(Window *window) {
 }
 
 static void init(void) {
+
+// initializing colors
+#ifdef PBL_COLOR
+   color_back = GColorOxfordBlue;
+   color_date = GColorChromeYellow;
+   color_dow =  GColorChromeYellow;
+   color_battery = GColorChromeYellow;
+   color_bluetooth = GColorChromeYellow;
+  
+  digit_back = GColorCeleste ;
+  digit_img = GColorDarkGreen;
+  
+#else
+   color_back = GColorWhite;
+   color_date = GColorBlack;
+   color_dow =  GColorBlack;
+   color_battery = GColorBlack;
+   color_bluetooth = GColorBlack;
+  
+  digit_back = GColorBlack;
+  digit_img = GColorWhite;
+  
+#endif
+  
+  
   window = window_create();
   window_set_window_handlers(window, (WindowHandlers) {
     .load = window_load,
     .unload = window_unload,
   });
-  window_set_background_color(window, GColorWhite);
+  
+  window_set_background_color(window, color_back);
   window_stack_push(window, true);
 
   tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
