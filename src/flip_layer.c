@@ -33,7 +33,8 @@ static void layer_update_callback(Layer *me, GContext* ctx) {
 		graphics_draw_bitmap_in_rect(ctx, flip_layer->anim_resized_image, (GRect) { .origin = origin, .size = bounds.size });
 		graphics_draw_rect(ctx, (GRect) { .origin = { 0, flip_layer->anim_image_y }, .size = { layer_bounds.size.w, bounds.size.h } });
 	}
-	
+  
+  
     //middle line
     graphics_context_set_fill_color(ctx, digit_back);
   	graphics_fill_rect(ctx, GRect(0,layer_bounds.size.h/2 - 1,layer_bounds.size.w,3), 0, 0);

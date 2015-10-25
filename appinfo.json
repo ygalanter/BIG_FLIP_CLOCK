@@ -14,6 +14,12 @@
     "resources": {
         "media": [
             {
+                "file": "images/menu.png",
+                "menuIcon": true,
+                "name": "MENU_IMAGE",
+                "type": "png"
+            },
+            {
                 "file": "fonts/digital-7 (mono).ttf",
                 "name": "DIGITAL_SEVEN_MONO_50",
                 "type": "font"
@@ -117,12 +123,6 @@
                 "file": "images/9_down.png",
                 "name": "IMAGE_9_DOWN",
                 "type": "png"
-            },
-            {
-                "file": "images/menu_image.png",
-                "menuIcon": true,
-                "name": "MENU_IMAGE",
-                "type": "png"
             }
         ]
     },
@@ -133,7 +133,7 @@
         "basalt"
     ],
     "uuid": "9bf03e12-8e29-4d4e-bb25-db60e8d85408",
-    "versionLabel": "2.1",
+    "versionLabel": "2.3",
     "watchapp": {
         "watchface": true
     }

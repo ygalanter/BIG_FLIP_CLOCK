@@ -271,6 +271,8 @@ static void window_unload(Window *window) {
 }
 
 static void init(void) {
+  
+  setlocale(LC_ALL, "");
 
 // initializing colors
 #ifdef PBL_COLOR
