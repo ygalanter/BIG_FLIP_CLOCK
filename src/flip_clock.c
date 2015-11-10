@@ -55,6 +55,17 @@ static TextLayer *s_textlayer_bt;
 
 static InverterLayer *inverter_layer;
 
+
+#ifndef PBL_SDK_2
+static void app_focus_changed(bool focused) {
+  if (focused) { // on resuming focus - restore background
+    layer_mark_dirty(effect_layer_get_layer(inverter_layer));
+  }
+}
+#endif
+
+
+
 static void batteryLayer_update_callback(Layer *me, GContext* ctx) {
 	GRect layer_bounds = layer_get_bounds(me);
   BatteryChargeState state =  battery_state_service_peek();
@@ -272,6 +283,15 @@ static void window_unload(Window *window) {
 
 static void init(void) {
   
+  
+
+  #ifndef PBL_SDK_2
+  // need to catch when app resumes focus after notification, otherwise background won't restore
+  app_focus_service_subscribe_handlers((AppFocusHandlers){
+    .did_focus = app_focus_changed
+  });
+  #endif
+  
   setlocale(LC_ALL, "");
 
 // initializing colors
@@ -316,6 +336,11 @@ static void init(void) {
 }
 
 static void deinit(void) {
+  
+  #ifndef PBL_SDK_2
+    app_focus_service_unsubscribe();
+  #endif
+  
   app_message_deregister_callbacks();
   bluetooth_connection_service_unsubscribe();
   window_destroy(window);
