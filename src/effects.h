@@ -1,11 +1,19 @@
 #pragma once
 #include <pebble.h>  
+
+// used to pass bimap info to get/set pixel accurately  
+typedef struct {
+   GBitmap *bitmap;  // actual bitmap for Chalk raw manipulation
+   uint8_t *bitmap_data;
+   int bytes_per_row;
+   GBitmapFormat bitmap_format;
+}  BitmapInfo;
   
 // structure of mask for masking effects
 typedef struct {
   GBitmap*  bitmap_mask; // bitmap used for mask (when masking by bitmap)
   GBitmap*  bitmap_background; // bitmap to show thru mask
-  GColor    mask_color; //color of the mask
+  GColor*   mask_colors; //array with colors of the mask
   GColor    background_color; // color of the background
   char*     text; // text used for mask (when when masking by text)
   GFont     font; // font used for text mask;
@@ -30,11 +38,25 @@ typedef struct {
   uint8_t *aplite_visited; // for Applite holds array of visited pixels
 } EffectOffset;  
 
+// structure for color swap effect
+typedef struct {
+  GColor firstColor;  // first color (target for colorize, one of set in colorswap)
+  GColor secondColor; // second color (new color for colorize, other of set in colorswap)
+} EffectColorpair;
+
 typedef void effect_cb(GContext* ctx, GRect position, void* param);
 
 // inverter effect.
 // Added by Yuriy Galanter
 effect_cb effect_invert;
+
+// colorize effect.
+// Added by Martin Norland (@cynorg)
+effect_cb effect_colorize;
+
+// colorswap effect.
+// Added by Martin Norland (@cynorg)
+effect_cb effect_colorswap;
 
 // Invert only black and white
 effect_cb effect_invert_bw_only;

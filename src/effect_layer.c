@@ -1,5 +1,5 @@
 #include <pebble.h>
-#include "effec_layer.h"
+#include "effect_layer.h"
 #include "effects.h"  
 
 // Find the offset of parent layer pointer  
@@ -57,7 +57,13 @@ EffectLayer* effect_layer_create(GRect frame) {
 
 //destroy effect layer
 void effect_layer_destroy(EffectLayer *effect_layer) {
-  layer_destroy(effect_layer->layer);
+  // precaution
+  if (effect_layer != NULL && effect_layer->layer != NULL) {
+    layer_destroy(effect_layer->layer);  
+    effect_layer->layer = NULL;
+    effect_layer = NULL;
+  }
+  
 }
 
 // returns base layer
@@ -65,11 +71,25 @@ Layer* effect_layer_get_layer(EffectLayer *effect_layer){
   return effect_layer->layer;
 }
 
-//sets effect for the layer
+//sets frame for effect layer
+void effect_layer_set_frame(EffectLayer *effect_layer, GRect frame) {
+  layer_set_frame(effect_layer->layer, frame);
+}
+
+//adds effect to the layer
 void effect_layer_add_effect(EffectLayer *effect_layer, effect_cb* effect, void* param) {
-  if(effect_layer->next_effect<MAX_EFFECTS) {
+  if(effect_layer->next_effect < MAX_EFFECTS) {
     effect_layer->effects[effect_layer->next_effect] = effect;
     effect_layer->params[effect_layer->next_effect] = param;  
     ++effect_layer->next_effect;
+  }
+}
+
+//removes last added effect
+void effect_layer_remove_effect(EffectLayer *effect_layer) {
+  if(effect_layer->next_effect > 0) {
+    effect_layer->effects[effect_layer->next_effect - 1] = NULL;
+    effect_layer->params[effect_layer->next_effect - 1] = NULL;  
+    --effect_layer->next_effect;
   }
 }

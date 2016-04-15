@@ -50,11 +50,7 @@ Layer* flip_layer_get_layer(FlipLayer *flip_layer){
 	return flip_layer->layer;
 }
 
-#ifdef PBL_COLOR
 static void animationUpdate(Animation *animation, const AnimationProgress progress) {
-#else
-static void animationUpdate(Animation *animation, const uint32_t progress) {
-#endif
 	FlipLayer *flip_layer = (FlipLayer *)animation_get_context(animation);
 
 	GRect layer_bounds = layer_get_bounds(flip_layer->layer);
@@ -151,9 +147,6 @@ void animation_stopped(Animation *animation, bool finished, void *data) {
 
 	flip_layer->isAnimating = false;
   
-  //YG JUN-04-2015: On basalt we need to recreate animation
-  #ifdef PBL_COLOR
-   
     flip_layer->animation = animation_create();
   	static const AnimationImplementation implementation = {
   	  .update = animationUpdate
@@ -165,7 +158,6 @@ void animation_stopped(Animation *animation, bool finished, void *data) {
   	animation_set_duration(flip_layer->animation, 1400);
   	animation_set_implementation(flip_layer->animation, &implementation);
     
-  #endif
   
 
 	layer_mark_dirty(flip_layer->layer);
@@ -212,11 +204,7 @@ FlipLayer* flip_layer_create(GRect frame){
 void flip_layer_destroy(FlipLayer *flip_layer){
 	if(flip_layer->animation){
 		animation_unschedule(flip_layer->animation);
-    
-    //YG JUN-04-2015: On aplite we need to recreate animation
-    #ifndef PBL_COLOR
-		  animation_destroy(flip_layer->animation);
-    #endif
+
 	}
 	layer_destroy(flip_layer->layer);
 	if(flip_layer->up_image){

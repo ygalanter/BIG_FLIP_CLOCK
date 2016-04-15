@@ -20,14 +20,20 @@ EffectLayer* effect_layer_create(GRect frame);
 //destroys effect layer
 void effect_layer_destroy(EffectLayer *effect_layer);
 
-//sets effect for the layer
+//adds effect for the layer
 void effect_layer_add_effect(EffectLayer *effect_layer, effect_cb* effect, void* param);
+
+//removes last added effect
+void effect_layer_remove_effect(EffectLayer *effect_layer);
 
 //gets layer
 Layer* effect_layer_get_layer(EffectLayer *effect_layer);
 
-// Recreate inverter_layer for BASALT
-#ifndef PBL_PLATFORM_APLITE
+//sets effect layer frame
+void effect_layer_set_frame(EffectLayer *effect_layer, GRect frame);
+
+// Recreate inverter_layer for SDK 3
+#ifndef InverterLayer
   #define InverterLayer EffectLayer
   #define inverter_layer_create(frame)({ EffectLayer* _el=effect_layer_create(frame); effect_layer_add_effect(_el,effect_invert,NULL);_el; })
   #define inverter_layer_get_layer effect_layer_get_layer

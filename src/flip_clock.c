@@ -1,7 +1,7 @@
 #include <pebble.h>
 #include "flip_layer.h"
 #include "flip_layer_extention.h"
-#include "effec_layer.h"
+#include "effect_layer.h"
   
   
 #define NUMBER_IMAGE_COUNT 10
@@ -44,6 +44,7 @@ char buffer_dow[] = "SAT   ";
 
 static Layer *batteryLayer;
 static TextLayer *s_textlayer_bt;
+static BitmapLayer *ptr_bg_layer;
 
 
 // {*** Begin configurable option 
@@ -54,15 +55,16 @@ static TextLayer *s_textlayer_bt;
 #define KEY_ENABLE_BT_NOTIF 3  
 
 static InverterLayer *inverter_layer;
+GRect bounds;
 
 
-#ifndef PBL_SDK_2
-static void app_focus_changed(bool focused) {
-  if (focused) { // on resuming focus - restore background
-    layer_mark_dirty(effect_layer_get_layer(inverter_layer));
-  }
-}
-#endif
+// #ifndef PBL_SDK_2
+// static void app_focus_changed(bool focused) {
+//   if (focused) { // on resuming focus - restore background
+//     layer_mark_dirty(effect_layer_get_layer(inverter_layer));
+//   }
+// }
+// #endif
 
 
 
@@ -101,7 +103,7 @@ static void in_recv_handler(DictionaryIterator *iterator, void *context) {
 
       case KEY_INVERT:
         if (t->value->int8 == 1) {
-          position_inverter_layer(0, 0, 144, 168);
+          position_inverter_layer(0, 0, bounds.size.w, bounds.size.h);
           persist_write_bool(KEY_INVERT, true);
         } else {
           position_inverter_layer(0, 0, 0, 0);
@@ -111,7 +113,13 @@ static void in_recv_handler(DictionaryIterator *iterator, void *context) {
       
       case KEY_SHOW_BATTERY:
         if (t->value->int8 == 1) {
-          position_battery_layer(2, 2, 140, 3);
+          
+             #ifdef PBL_RECT
+              batteryLayer = layer_create(GRect(bounds.origin.x +  2, bounds.origin.y + 2, bounds.size.w-4, 3));
+            #else
+              batteryLayer = layer_create(GRect(bounds.origin.x +  10, bounds.origin.y + 55, bounds.size.w-20, 3));
+            #endif
+          
           persist_write_bool(KEY_SHOW_BATTERY, true);
         } else {
           position_battery_layer(0, 0, 0, 0);
@@ -122,17 +130,17 @@ static void in_recv_handler(DictionaryIterator *iterator, void *context) {
       case KEY_SWAP_DATE_DOW:
       
         if (t->value->int8 == 1) {
-          DateYcoord = 106;
-          DoWYcoord = -4;
+          DateYcoord = bounds.size.h - 62;
+          DoWYcoord = bounds.origin.y + PBL_IF_RECT_ELSE(-4, 10);
           persist_write_bool(KEY_SWAP_DATE_DOW, true);
         } else {
-          DateYcoord = -4;
-          DoWYcoord = 106; 
+          DateYcoord = bounds.origin.y + PBL_IF_RECT_ELSE(-4, 10);
+          DoWYcoord = bounds.size.h - 62;
           persist_write_bool(KEY_SWAP_DATE_DOW, false);
         }
       
-        layer_set_frame(text_layer_get_layer(text_layer_date), GRect(0, DateYcoord, 144, 60));
-        layer_set_frame(text_layer_get_layer(text_layer_dow), GRect(0, DoWYcoord, 144, 60));
+        layer_set_frame(text_layer_get_layer(text_layer_date), GRect(0, DateYcoord, bounds.size.w, 60));
+        layer_set_frame(text_layer_get_layer(text_layer_dow), GRect(0, DoWYcoord, bounds.size.w, 60));
       
         break;
       
@@ -201,41 +209,28 @@ static void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
 
 static void window_load(Window *window) {
   Layer *window_layer = window_get_root_layer(window);
+  bounds = layer_get_bounds(window_layer);
   
   if (persist_read_bool(KEY_SWAP_DATE_DOW) == true) {
-    DateYcoord = 106;
-    DoWYcoord = -4;
+    DateYcoord = bounds.size.h - 62;
+    DoWYcoord = bounds.origin.y + PBL_IF_RECT_ELSE(-4, 10);
   } else {
-    DateYcoord = -4;
-    DoWYcoord = 106;    
+    DateYcoord = bounds.origin.y + PBL_IF_RECT_ELSE(-4, 10);
+    DoWYcoord = bounds.size.h - 62;
   }
-   
-  text_layer_date = text_layer_create(GRect(0, DateYcoord, 144, 60));
-  text_layer_set_text_color(text_layer_date, color_date);
-  text_layer_set_background_color(text_layer_date, GColorClear);
-  text_layer_set_text_alignment(text_layer_date, GTextAlignmentCenter);
-  text_layer_set_font(text_layer_date, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DIGITAL_SEVEN_MONO_50)));
-  layer_add_child(window_layer, text_layer_get_layer(text_layer_date));
   
-  text_layer_dow = text_layer_create(GRect(0, DoWYcoord, 144, 60));
-  text_layer_set_text_color(text_layer_dow, color_dow);
-  text_layer_set_background_color(text_layer_dow, GColorClear);
-  text_layer_set_text_alignment(text_layer_dow, GTextAlignmentCenter);
-  text_layer_set_font(text_layer_dow, fonts_load_custom_font(resource_get_handle(RESOURCE_ID_DIGITAL_SEVEN_MONO_50)));
-  layer_add_child(window_layer, text_layer_get_layer(text_layer_dow));
-    
-  // s_textlayer_bt
-  s_textlayer_bt = text_layer_create(GRect(0, 152, 144, 16));
-  text_layer_set_text(s_textlayer_bt, "Bluetooth disconnected");
-  text_layer_set_background_color(s_textlayer_bt, GColorClear);
-  text_layer_set_text_color(s_textlayer_bt, color_back);
-  text_layer_set_text_alignment(s_textlayer_bt, GTextAlignmentCenter);
-  text_layer_set_font(s_textlayer_bt, fonts_get_system_font(FONT_KEY_GOTHIC_14));
-  layer_add_child(window_layer, (Layer *)s_textlayer_bt);
+  #ifdef PBL_ROUND
+    ptr_bg_layer = bitmap_layer_create(GRect(0, (bounds.size.h-60)/2, bounds.size.w, 60));
+    bitmap_layer_set_background_color(ptr_bg_layer, digit_img);
+    layer_add_child(window_layer, bitmap_layer_get_layer(ptr_bg_layer));
+  #endif
   
-
   for(int i=0; i<4; i++){
-    layer[i] = flip_layer_create(GRect(36 * i + (i>1? 1:0) , (168-60)/2, 35, 60));
+    #ifdef PBL_RECT
+      layer[i] = flip_layer_create(GRect(36 * i + (i>1? 1:0), (bounds.size.h-60)/2, 35, 60));
+    #else
+      layer[i] = flip_layer_create(GRect(40 * i + (i>1? 3:0) +  10 , (bounds.size.h-60)/2, 37, 60));
+    #endif
   }
   
   for(int i=0; i<4; i++){
@@ -243,8 +238,37 @@ static void window_load(Window *window) {
     layer_add_child(window_layer, flip_layer_get_layer(layer[i]));
   }
   
+  
+  text_layer_date = text_layer_create(GRect(0, DateYcoord, bounds.size.w, 60));
+  text_layer_set_text_color(text_layer_date, color_date);
+  text_layer_set_background_color(text_layer_date, GColorClear);
+  text_layer_set_text_alignment(text_layer_date, GTextAlignmentCenter);
+  text_layer_set_font(text_layer_date, fonts_load_custom_font(resource_get_handle(PBL_IF_RECT_ELSE(RESOURCE_ID_DIGITAL_SEVEN_MONO_50, RESOURCE_ID_DIGITAL_SEVEN_MONO_40))));
+  layer_add_child(window_layer, text_layer_get_layer(text_layer_date));
+  
+  text_layer_dow = text_layer_create(GRect(0, DoWYcoord, bounds.size.w, 60));
+  text_layer_set_text_color(text_layer_dow, color_dow);
+  text_layer_set_background_color(text_layer_dow, GColorClear);
+  text_layer_set_text_alignment(text_layer_dow, GTextAlignmentCenter);
+  text_layer_set_font(text_layer_dow, fonts_load_custom_font(resource_get_handle(PBL_IF_RECT_ELSE(RESOURCE_ID_DIGITAL_SEVEN_MONO_50, RESOURCE_ID_DIGITAL_SEVEN_MONO_40))));
+  layer_add_child(window_layer, text_layer_get_layer(text_layer_dow));
+    
+  // s_textlayer_bt
+  s_textlayer_bt = text_layer_create(GRect(0, bounds.size.h - PBL_IF_RECT_ELSE(16,64), bounds.size.w, 16));
+  text_layer_set_text(s_textlayer_bt, "Bluetooth disconnected");
+  text_layer_set_background_color(s_textlayer_bt, GColorClear);
+  text_layer_set_text_color(s_textlayer_bt, color_back);
+  text_layer_set_text_alignment(s_textlayer_bt, GTextAlignmentCenter);
+  text_layer_set_font(s_textlayer_bt, fonts_get_system_font(FONT_KEY_GOTHIC_14));
+  layer_add_child(window_layer, (Layer *)s_textlayer_bt);
+  
+  
   if (persist_read_bool(KEY_SHOW_BATTERY) == true) {
-    batteryLayer = layer_create(GRect(2, 2, 140, 3));
+    #ifdef PBL_RECT
+      batteryLayer = layer_create(GRect(bounds.origin.x +  2, bounds.origin.y + 2, bounds.size.w-4, 3));
+    #else
+      batteryLayer = layer_create(GRect(bounds.origin.x +  10, bounds.origin.y + 55, bounds.size.w-20, 3));
+    #endif
   } else {
     batteryLayer = layer_create(GRect(0, 0, 0, 0));
   }
@@ -252,7 +276,7 @@ static void window_load(Window *window) {
   layer_add_child(window_get_root_layer(window), batteryLayer);
   
   if (persist_read_bool(KEY_INVERT) == true) {
-    inverter_layer = inverter_layer_create(GRect(0, 0, 144,168));
+    inverter_layer = inverter_layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
   } else {
     inverter_layer = inverter_layer_create(GRect(0, 0, 0, 0));
   }
@@ -285,12 +309,12 @@ static void init(void) {
   
   
 
-  #ifndef PBL_SDK_2
-  // need to catch when app resumes focus after notification, otherwise background won't restore
-  app_focus_service_subscribe_handlers((AppFocusHandlers){
-    .did_focus = app_focus_changed
-  });
-  #endif
+//   #ifndef PBL_SDK_2
+//   // need to catch when app resumes focus after notification, otherwise background won't restore
+//   app_focus_service_subscribe_handlers((AppFocusHandlers){
+//     .did_focus = app_focus_changed
+//   });
+//   #endif
   
   setlocale(LC_ALL, "");
 
@@ -330,16 +354,16 @@ static void init(void) {
   tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
   
   app_message_register_inbox_received((AppMessageInboxReceived) in_recv_handler);
-  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+  app_message_open(500, 500);
   
   bluetooth_connection_service_subscribe(display_bt_layer);
 }
 
 static void deinit(void) {
   
-  #ifndef PBL_SDK_2
-    app_focus_service_unsubscribe();
-  #endif
+//   #ifndef PBL_SDK_2
+//     app_focus_service_unsubscribe();
+//   #endif
   
   app_message_deregister_callbacks();
   bluetooth_connection_service_unsubscribe();
