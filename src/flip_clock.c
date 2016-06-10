@@ -1,7 +1,7 @@
 #include <pebble.h>
 #include "flip_layer.h"
 #include "flip_layer_extention.h"
-#include "effect_layer.h"
+#include <pebble-effect-layer/pebble-effect-layer.h>
   
   
 #define NUMBER_IMAGE_COUNT 10
@@ -44,8 +44,9 @@ char buffer_dow[] = "SAT   ";
 
 static Layer *batteryLayer;
 static TextLayer *s_textlayer_bt;
+#ifdef PBL_ROUND
 static BitmapLayer *ptr_bg_layer;
-
+#endif
 
 // {*** Begin configurable option 
   
