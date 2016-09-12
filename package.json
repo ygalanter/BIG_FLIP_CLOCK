@@ -10,7 +10,7 @@
             "configurable"
         ],
         "displayName": "Big Flip Clock",
-        "enableMultiJS": true,
+        "enableMultiJS": false,
         "messageKeys": {
             "KEY_ENABLE_BT_NOTIF": 3,
             "KEY_INVERT": 0,
