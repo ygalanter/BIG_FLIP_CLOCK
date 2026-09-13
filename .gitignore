@@ -1,0 +1,12 @@
+# Pebble / Waf build output
+/build/
+.lock-waf*
+.waf-*
+*.pbw
+
+# Node dependencies and logs
+/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
