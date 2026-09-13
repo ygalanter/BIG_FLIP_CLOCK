@@ -1,0 +1,634 @@
+{
+    "capabilities": [
+        "configurable"
+    ],
+    "displayName": "Big Flip Clock",
+    "enableMultiJS": true,
+    "messageKeys": {
+        "COLOR_BG": 10000,
+        "COLOR_TIME_BG": 10001,
+        "COLOR_TIME": 10002,
+        "COLOR_DATE": 10003,
+        "SHOW_BATTERY": 10004,
+        "SWAP_DATE_DOW": 10005,
+        "ENABLE_BT_NOTIF": 10006
+    },
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "type": "bitmap",
+                "name": "MENU_IMAGE",
+                "file": "images/menu.png",
+                "menuIcon": true
+            },
+            {
+                "type": "font",
+                "name": "DIGITAL_SEVEN_MONO_40",
+                "file": "fonts/digital-7 (mono).ttf"
+            },
+            {
+                "type": "font",
+                "name": "DIGITAL_SEVEN_MONO_50",
+                "file": "fonts/digital-7 (mono).ttf"
+            },
+            {
+                "type": "font",
+                "name": "DIGITAL_SEVEN_MONO_64",
+                "file": "fonts/digital-7 (mono).ttf",
+                "targetPlatforms": [
+                    "emery",
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_0_UP",
+                "file": "images/0_up.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_0_UP",
+                "file": "images/emery/0_up.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_0_UP",
+                "file": "images/gabbro/0_up.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_0_DOWN",
+                "file": "images/0_down.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_0_DOWN",
+                "file": "images/emery/0_down.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_0_DOWN",
+                "file": "images/gabbro/0_down.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_1_UP",
+                "file": "images/1_up.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_1_UP",
+                "file": "images/emery/1_up.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_1_UP",
+                "file": "images/gabbro/1_up.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_1_DOWN",
+                "file": "images/1_down.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_1_DOWN",
+                "file": "images/emery/1_down.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_1_DOWN",
+                "file": "images/gabbro/1_down.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_2_UP",
+                "file": "images/2_up.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_2_UP",
+                "file": "images/emery/2_up.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_2_UP",
+                "file": "images/gabbro/2_up.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_2_DOWN",
+                "file": "images/2_down.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_2_DOWN",
+                "file": "images/emery/2_down.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_2_DOWN",
+                "file": "images/gabbro/2_down.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_3_UP",
+                "file": "images/3_up.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_3_UP",
+                "file": "images/emery/3_up.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_3_UP",
+                "file": "images/gabbro/3_up.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_3_DOWN",
+                "file": "images/3_down.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_3_DOWN",
+                "file": "images/emery/3_down.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_3_DOWN",
+                "file": "images/gabbro/3_down.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_4_UP",
+                "file": "images/4_up.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_4_UP",
+                "file": "images/emery/4_up.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_4_UP",
+                "file": "images/gabbro/4_up.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_4_DOWN",
+                "file": "images/4_down.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_4_DOWN",
+                "file": "images/emery/4_down.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_4_DOWN",
+                "file": "images/gabbro/4_down.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_5_UP",
+                "file": "images/5_up.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_5_UP",
+                "file": "images/emery/5_up.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_5_UP",
+                "file": "images/gabbro/5_up.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_5_DOWN",
+                "file": "images/5_down.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_5_DOWN",
+                "file": "images/emery/5_down.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_5_DOWN",
+                "file": "images/gabbro/5_down.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_6_UP",
+                "file": "images/6_up.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_6_UP",
+                "file": "images/emery/6_up.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_6_UP",
+                "file": "images/gabbro/6_up.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_6_DOWN",
+                "file": "images/6_down.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_6_DOWN",
+                "file": "images/emery/6_down.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_6_DOWN",
+                "file": "images/gabbro/6_down.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_7_UP",
+                "file": "images/7_up.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_7_UP",
+                "file": "images/emery/7_up.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_7_UP",
+                "file": "images/gabbro/7_up.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_7_DOWN",
+                "file": "images/7_down.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_7_DOWN",
+                "file": "images/emery/7_down.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_7_DOWN",
+                "file": "images/gabbro/7_down.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_8_UP",
+                "file": "images/8_up.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_8_UP",
+                "file": "images/emery/8_up.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_8_UP",
+                "file": "images/gabbro/8_up.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_8_DOWN",
+                "file": "images/8_down.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_8_DOWN",
+                "file": "images/emery/8_down.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_8_DOWN",
+                "file": "images/gabbro/8_down.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_9_UP",
+                "file": "images/9_up.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_9_UP",
+                "file": "images/emery/9_up.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_9_UP",
+                "file": "images/gabbro/9_up.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_9_DOWN",
+                "file": "images/9_down.png",
+                "targetPlatforms": [
+                    "aplite",
+                    "basalt",
+                    "diorite",
+                    "flint",
+                    "chalk"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_9_DOWN",
+                "file": "images/emery/9_down.png",
+                "targetPlatforms": [
+                    "emery"
+                ]
+            },
+            {
+                "type": "bitmap",
+                "name": "IMAGE_9_DOWN",
+                "file": "images/gabbro/9_down.png",
+                "targetPlatforms": [
+                    "gabbro"
+                ]
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "targetPlatforms": [
+        "aplite",
+        "basalt",
+        "chalk",
+        "diorite",
+        "emery",
+        "flint",
+        "gabbro"
+    ],
+    "uuid": "9bf03e12-8e29-4d4e-bb25-db60e8d85408",
+    "watchapp": {
+        "watchface": true
+    },
+    "name": "big-flip-clock",
+    "shortName": "Big Flip Clock",
+    "longName": "Big Flip Clock",
+    "versionLabel": "3.0.0",
+    "companyName": "Yuriy Galanter",
+    "appKeys": {
+        "COLOR_BG": 10000,
+        "COLOR_TIME_BG": 10001,
+        "COLOR_TIME": 10002,
+        "COLOR_DATE": 10003,
+        "SHOW_BATTERY": 10004,
+        "SWAP_DATE_DOW": 10005,
+        "ENABLE_BT_NOTIF": 10006
+    }
+}

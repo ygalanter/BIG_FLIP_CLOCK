@@ -29,6 +29,7 @@ static void layer_update_callback(Layer *me, GContext* ctx) {
 		GPoint origin;
 		origin.x = (layer_bounds.size.w - bounds.size.w) / 2;
 		origin.y = flip_layer->anim_image_y;
+		graphics_context_set_fill_color(ctx, digit_back);
 		graphics_fill_rect(ctx, (GRect) { .origin = origin, .size = bounds.size }, 0, GCornersAll);
 		graphics_draw_bitmap_in_rect(ctx, flip_layer->anim_resized_image, (GRect) { .origin = origin, .size = bounds.size });
 		graphics_draw_rect(ctx, (GRect) { .origin = { 0, flip_layer->anim_image_y }, .size = { layer_bounds.size.w, bounds.size.h } });
@@ -189,6 +190,9 @@ FlipLayer* flip_layer_create(GRect frame){
 	animation_set_implementation(flip_layer->animation, &implementation);
 
 	flip_layer->current_Digit = 0;
+	flip_layer->next_Digit = 0;
+	flip_layer->isAnimating = false;
+	flip_layer->anim_resized_image = NULL;
 	flip_layer->up_image = NULL;
 	flip_layer->down_image = NULL;
 	flip_layer->up_anim_image = NULL;
@@ -238,6 +242,29 @@ void flip_layer_set_images(FlipLayer *flip_layer, int *up_images, int *down_imag
       flip_layer_color_image(flip_layer->up_image);
       flip_layer_color_image(flip_layer->down_image);
     #endif
-    
+
 	}
+}
+
+void flip_layer_apply_colors(FlipLayer *flip_layer){
+	if(flip_layer->nb_of_images <= 0 || flip_layer->isAnimating){
+		return;
+	}
+	// re-create the resting tile halves for the current digit so the new colors
+	// (palette recolor on color platforms; inversion flag on B&W) take effect now.
+	if(flip_layer->up_image){
+		gbitmap_destroy(flip_layer->up_image);
+	}
+	if(flip_layer->down_image){
+		gbitmap_destroy(flip_layer->down_image);
+	}
+	flip_layer->up_image   = gbitmap_create_with_resource(flip_layer->up_images[flip_layer->current_Digit]);
+	flip_layer->down_image = gbitmap_create_with_resource(flip_layer->down_images[flip_layer->current_Digit]);
+
+	#ifdef PBL_COLOR
+	  flip_layer_color_image(flip_layer->up_image);
+	  flip_layer_color_image(flip_layer->down_image);
+	#endif
+
+	layer_mark_dirty(flip_layer->layer);
 }
